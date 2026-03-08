@@ -89,7 +89,7 @@ public class BankingServiceTests
         var result = _sut.Withdraw(accountId, new Money(200m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Insufficient funds.", result.Error);
+        Assert.Equal(ErrorMessages.InsufficientFunds, result.Error);
         Assert.Equal(100m, GetBalance(accountId));
     }
 
@@ -113,7 +113,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(fromId, toId, new Money(200m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Insufficient funds.", result.Error);
+        Assert.Equal(ErrorMessages.InsufficientFunds, result.Error);
         Assert.Equal(100m, GetBalance(fromId));
         Assert.Equal(100m, GetBalance(toId));
     }
@@ -126,7 +126,7 @@ public class BankingServiceTests
         var result = _sut.Deposit(accountId, new Money(100m, "EUR"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Currency mismatch", result.Error);
+        Assert.Equal(ErrorMessages.DepositCurrencyMismatch("USD", "EUR"), result.Error);
         Assert.Equal(500m, GetBalance(accountId));
     }
 
@@ -138,7 +138,7 @@ public class BankingServiceTests
         var result = _sut.Withdraw(accountId, new Money(100m, "EUR"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Currency mismatch", result.Error);
+        Assert.Equal(ErrorMessages.WithdrawalCurrencyMismatch("USD", "EUR"), result.Error);
         Assert.Equal(500m, GetBalance(accountId));
     }
 
@@ -151,7 +151,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(usdAccountId, eurAccountId, new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Currency mismatch", result.Error);
+        Assert.Equal(ErrorMessages.TransferDestinationCurrencyMismatch("EUR", "USD"), result.Error);
         Assert.Equal(500m, GetBalance(usdAccountId));
     }
 
@@ -163,7 +163,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(accountId, accountId, new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Cannot transfer to the same account.", result.Error);
+        Assert.Equal(ErrorMessages.SameAccountTransfer, result.Error);
         Assert.Equal(500m, GetBalance(accountId));
     }
 
@@ -282,9 +282,9 @@ public class BankingServiceTests
         _sut.Transfer(a, b, new Money(150m, "USD"), Guid.NewGuid());
         _sut.Transfer(b, c, new Money(200m, "USD"), Guid.NewGuid());
 
-        var totalDeposited  = 1000m + 500m + 250m + 200m + 100m;
-        var totalWithdrawn  = 300m + 50m;
-        var expectedSupply  = totalDeposited - totalWithdrawn;
+        var totalDeposited = 1000m + 500m + 250m + 200m + 100m;
+        var totalWithdrawn = 300m + 50m;
+        var expectedSupply = totalDeposited - totalWithdrawn;
 
         var actualSupply = GetBalance(a) + GetBalance(b) + GetBalance(c);
 
@@ -299,7 +299,7 @@ public class BankingServiceTests
         var result = _sut.CreateAccount("", new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Owner name", result.Error);
+        Assert.Equal(ErrorMessages.OwnerNameRequired, result.Error);
     }
 
     [Fact]
@@ -308,7 +308,7 @@ public class BankingServiceTests
         var result = _sut.CreateAccount("   ", new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Owner name", result.Error);
+        Assert.Equal(ErrorMessages.OwnerNameRequired, result.Error);
     }
 
     [Fact]
@@ -317,7 +317,7 @@ public class BankingServiceTests
         var result = _sut.CreateAccount("Alice", new Money(0m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("deposit", result.Error);
+        Assert.Equal(ErrorMessages.InitialDepositMustBePositive, result.Error);
     }
 
     // Account not found
@@ -328,7 +328,7 @@ public class BankingServiceTests
         var result = _sut.Deposit(Guid.NewGuid(), new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Account not found.", result.Error);
+        Assert.Equal(ErrorMessages.AccountNotFound, result.Error);
     }
 
     [Fact]
@@ -337,7 +337,7 @@ public class BankingServiceTests
         var result = _sut.Withdraw(Guid.NewGuid(), new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Account not found.", result.Error);
+        Assert.Equal(ErrorMessages.AccountNotFound, result.Error);
     }
 
     [Fact]
@@ -346,7 +346,7 @@ public class BankingServiceTests
         var result = _sut.GetBalance(Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Account not found.", result.Error);
+        Assert.Equal(ErrorMessages.AccountNotFound, result.Error);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(Guid.NewGuid(), toId, new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Source account not found", result.Error);
+        Assert.Equal(ErrorMessages.SourceAccountNotFound, result.Error);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(fromId, Guid.NewGuid(), new Money(100m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Destination account not found", result.Error);
+        Assert.Equal(ErrorMessages.DestinationAccountNotFound, result.Error);
     }
 
     // Zero amounts
@@ -381,6 +381,7 @@ public class BankingServiceTests
         var result = _sut.Deposit(accountId, new Money(0m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorMessages.DepositAmountMustBePositive, result.Error);
     }
 
     [Fact]
@@ -391,6 +392,7 @@ public class BankingServiceTests
         var result = _sut.Withdraw(accountId, new Money(0m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorMessages.WithdrawalAmountMustBePositive, result.Error);
     }
 
     [Fact]
@@ -402,6 +404,7 @@ public class BankingServiceTests
         var result = _sut.Transfer(fromId, toId, new Money(0m, "USD"), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorMessages.TransferAmountMustBePositive, result.Error);
     }
 
     // Money invariants
