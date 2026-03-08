@@ -13,5 +13,5 @@ internal class LedgerRepository
     }
 
     public IReadOnlyList<LedgerEntry> GetByAccountId(Guid accountId) =>
-        _entries.TryGetValue(accountId, out var list) ? list.AsReadOnly() : [];
+        _entries.TryGetValue(accountId, out var list) ? new List<LedgerEntry>(list) : [];
 }
