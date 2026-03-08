@@ -8,31 +8,31 @@ internal class Auditor
 
     public IReadOnlyList<AuditEntry> GetAll() => _log.GetAll();
 
-    public Result Succeed(string operation, List<Guid> accountIds, Money amount, Guid idempotencyKey)
+    public Result Succeed(Operation operation, List<Guid> accountIds, Money amount, Guid idempotencyKey)
     {
         Append(operation, accountIds, amount, idempotencyKey, "Success");
         return Result.Success();
     }
 
-    public Result<T> Succeed<T>(string operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, T value)
+    public Result<T> Succeed<T>(Operation operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, T value)
     {
         Append(operation, accountIds, amount, idempotencyKey, "Success");
         return Result<T>.Success(value);
     }
 
-    public Result Fail(string operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string error)
+    public Result Fail(Operation operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string error)
     {
         Append(operation, accountIds, amount, idempotencyKey, $"Failed: {error}");
         return Result.Failure(error);
     }
 
-    public Result<T> Fail<T>(string operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string error)
+    public Result<T> Fail<T>(Operation operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string error)
     {
         Append(operation, accountIds, amount, idempotencyKey, $"Failed: {error}");
         return Result<T>.Failure(error);
     }
 
-    private void Append(string operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string outcome)
+    private void Append(Operation operation, List<Guid> accountIds, Money amount, Guid idempotencyKey, string outcome)
     {
         _log.Append(new AuditEntry
         {
