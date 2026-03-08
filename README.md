@@ -1,4 +1,4 @@
-# FirstCircle Bank
+# Mini Bank
 
 An in-memory banking service implemented as a C# class library. No HTTP, no database, no console — the test suite is the entry point.
 
