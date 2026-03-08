@@ -9,12 +9,6 @@ An in-memory banking service implemented as a C# class library. No HTTP, no data
 - Transfer funds between accounts
 - Query account balance
 
-## Running the tests
-
-```bash
-dotnet test
-```
-
 ## Project structure
 
 ```
